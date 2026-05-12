@@ -4,14 +4,31 @@
 import KakaoMap from '@/features/map/components/KakaoMap'
 import { useZones } from '@/features/zone/hooks/useZones'
 import { Zone } from '@/features/zone/types'
+import ZoneDetailSheet from '@/features/zone/components/zoneDetailSheet'
+import ZoneSummarySheet from '@/features/zone/components/zoneSummarySheet'
+import { useState } from 'react'
 
 export default function HomePage() {
   const { zones, loading } = useZones()
+  const [selectedZone, setSelectedZone] = useState<Zone | null>(null)
+  const [summaryZone, setSummaryZone] = useState<Zone | null>(null)
 
   const handleZoneClick = (zone: Zone) => {
-    console.log('클릭된 구간:', zone.conzone_id)
-    // 나중에 ZoneDetailSheet 열기로 교체
+    setSelectedZone(zone)
   }
+
+  const handleClose = () => {
+    setSelectedZone(null)
+  }  
+
+  const handleSummaryClick = (zone: Zone) => {
+    
+    console.log('위험 이유 보기:', zone.conzone_id)
+    setSelectedZone(null)   // 상세 시트 닫고
+    setSummaryZone(zone)    // 설명 시트 열기
+  }
+  
+  const handleSummaryClose = () => setSummaryZone(null)
 
   return (
     <main style={{ position: 'relative', width: '100%', height: '100vh' }}>
@@ -26,6 +43,18 @@ export default function HomePage() {
         </div>
       )}
       <KakaoMap zones={zones} onZoneClick={handleZoneClick} />
+
+      <ZoneDetailSheet
+        zone={selectedZone}
+        onClose={handleClose}
+        onSummaryClick={handleSummaryClick}
+      />
+
+      <ZoneSummarySheet
+        zone={summaryZone}
+        onClose={handleSummaryClose}
+      />
+
     </main>
   )
 }
