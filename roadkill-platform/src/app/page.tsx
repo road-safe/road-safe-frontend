@@ -6,7 +6,14 @@ import { useZones } from '@/features/zone/hooks/useZones'
 import { Zone } from '@/features/zone/types'
 import ZoneDetailSheet from '@/features/zone/components/zoneDetailSheet'
 import ZoneSummarySheet from '@/features/zone/components/zoneSummarySheet'
-import { useState } from 'react'
+import SearchBar from '@/features/location/components/SeacrhBar'
+import { useRef, useState } from 'react'
+
+interface SearchResult {
+  lat: number
+  lng: number
+  place_name: string
+}
 
 export default function HomePage() {
   const { zones, loading } = useZones()
@@ -27,8 +34,16 @@ export default function HomePage() {
     setSelectedZone(null)   // 상세 시트 닫고
     setSummaryZone(zone)    // 설명 시트 열기
   }
-  
+
   const handleSummaryClose = () => setSummaryZone(null)
+
+  const mapMoveRef = useRef<((lat: number, lng: number) => void) | null>(null)
+
+  const handleSearchSelect = (result: SearchResult) => {
+    // KakaoMap에서 올려준 이동 함수 호출
+    console.log('mapMoveRef:', mapMoveRef.current)
+    mapMoveRef.current?.(result.lat, result.lng)
+  }
 
   return (
     <main style={{ position: 'relative', width: '100%', height: '100vh' }}>
@@ -42,7 +57,15 @@ export default function HomePage() {
           지도 불러오는 중...
         </div>
       )}
-      <KakaoMap zones={zones} onZoneClick={handleZoneClick} />
+      <KakaoMap 
+        zones={zones} onZoneClick={handleZoneClick}
+        onMapReady={(moveFn) => {
+        console.log('map ready')
+        mapMoveRef.current = moveFn
+        }} 
+      />
+
+      <SearchBar onSelect={handleSearchSelect} />
 
       <ZoneDetailSheet
         zone={selectedZone}
