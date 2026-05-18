@@ -20,42 +20,6 @@ export default function SearchBar({ onSelect }: Props) {
   const [focused, setFocused]   = useState(false)
   const timerRef                = useRef<NodeJS.Timeout | null>(null)
 
-  // 입력 후 400ms 대기 후 검색 (디바운스)
-  /* api연결 후 변경
-  useEffect(() => {
-    if (!query.trim()) {
-      setResults([])
-      return
-    }
-
-    if (timerRef.current) clearTimeout(timerRef.current)
-
-    timerRef.current = setTimeout(async () => {
-      setLoading(true)
-      try {
-        const res = await fetch(
-          `/api/search/location?query=${encodeURIComponent(query)}`
-        )
-        if (!res.ok) throw new Error()
-        const data = await res.json()
-        // 백엔드 완성 전까지 mock
-        setResults(MOCK_RESULTS.filter(r =>
-          r.place_name.includes(query)
-        ))
-      } catch {
-        setResults([])
-      } finally {
-        setLoading(false)
-      }
-    }, 400)
-
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current)
-    }
-  }, [query])
-  */
-
-  //목데이터------
   useEffect(() => {
   if (!query.trim()) {
     setResults([])
@@ -65,17 +29,44 @@ export default function SearchBar({ onSelect }: Props) {
   if (timerRef.current) clearTimeout(timerRef.current)
 
   timerRef.current = setTimeout(() => {
-    // fetch 없이 바로 mock 필터링
-    const filtered = MOCK_RESULTS.filter(r =>
-      r.place_name.includes(query)
-    )
-    setResults(filtered)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/search/location?query=${encodeURIComponent(query)}`)
+      .then(res => {
+        if (!res.ok) throw new Error()
+        return res.json()
+      })
+      .then(data => {
+        // 백엔드가 단일 객체로 반환하는 경우
+        setResults(data.place_name ? [data] : data.results ?? [])
+      })
+      .catch(() => setResults([]))
   }, 400)
 
   return () => {
     if (timerRef.current) clearTimeout(timerRef.current)
   }
 }, [query])
+
+  //목데이터------
+//   useEffect(() => {
+//   if (!query.trim()) {
+//     setResults([])
+//     return
+//   }
+
+//   if (timerRef.current) clearTimeout(timerRef.current)
+
+//   timerRef.current = setTimeout(() => {
+//     // fetch 없이 바로 mock 필터링
+//     const filtered = MOCK_RESULTS.filter(r =>
+//       r.place_name.includes(query)
+//     )
+//     setResults(filtered)
+//   }, 400)
+
+//   return () => {
+//     if (timerRef.current) clearTimeout(timerRef.current)
+//   }
+// }, [query])
 //목데이터-----
 
 

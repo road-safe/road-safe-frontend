@@ -64,14 +64,35 @@ export function useZones(period: Period = 'all') {
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string | null>(null)
 
-  useEffect(() => {
-    // 나중에 fetch('/api/zones/heatmap') 로 교체
-    setLoading(true)
-    setTimeout(() => {
-      setZones(MOCK_ZONES_BY_PERIOD[period])
-      setLoading(false)
-    }, 300)
-  }, [period])
+//   useEffect(() => {
+//     // 나중에 fetch('/api/zones/heatmap') 로 교체
+//     setLoading(true)
+//     setTimeout(() => {
+//       setZones(MOCK_ZONES_BY_PERIOD[period])
+//       setLoading(false)
+//     }, 300)
+//   }, [period])
+
+    useEffect(() => {
+        setLoading(true)
+        setError(null)
+
+        const params = period !== 'all' ? `?period=${period}` : ''
+
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/zones/heatmap${params}`)
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`)
+            return res.json()
+        })
+        .then(data => setZones(data.zones))
+        .catch(err => {
+            console.error('zones fetch 실패:', err)
+            setError('데이터를 불러오지 못했어요.')
+        })
+      .finally(() => setLoading(false))
+    }, [period])
+
 
   return { zones, loading, error }
+
 }

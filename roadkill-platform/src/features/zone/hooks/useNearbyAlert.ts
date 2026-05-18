@@ -10,58 +10,45 @@ interface AlertInfo {
   distance_m: number
 }
 
-function getDistanceM(
-  lat1: number, lng1: number,
-  lat2: number, lng2: number
-): number {
-  const R = 6371000
-  const dLat = ((lat2 - lat1) * Math.PI) / 180
-  const dLng = ((lng2 - lng1) * Math.PI) / 180
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-    Math.cos((lat2 * Math.PI) / 180) *
-    Math.sin(dLng / 2) ** 2
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
-
 export function useNearbyAlert(
   position: { lat: number; lng: number } | null,
   zones: Zone[]
 ) {
-  const [alert, setAlert]   = useState<AlertInfo | null>(null)
-  const cooldownRef         = useRef<Record<string, number>>({})
+  const [alert, setAlert] = useState<AlertInfo | null>(null)
+  const cooldownRef       = useRef<Record<string, number>>({})
 
   useEffect(() => {
-    if (!position || zones.length === 0) return
+    if (!position) return
 
-    const now = Date.now()
+    fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/zones/nearby` +
+      `?lat=${position.lat}&lng=${position.lng}&radius=${DEFAULT_RADIUS_M}`
+    )
+      .then(res => {
+        if (!res.ok) throw new Error()
+        return res.json()
+      })
+      .then(data => {
+        if (!data.alert_needed || data.zones.length === 0) return
 
-    // 가장 가까운 위험구간 찾기
-    let closest: AlertInfo | null = null
+        const nearest = data.zones[0]
 
-    zones.forEach(zone => {
-      const dist = getDistanceM(
-        position.lat, position.lng,
-        zone.center.lat, zone.center.lng,
-      )
+        // 쿨타임 체크
+        const now = Date.now()
+        const lastAlerted = cooldownRef.current[nearest.conzone_id] ?? 0
+        if (now - lastAlerted < ALERT_COOLTIME_MS) return
 
-      if (dist > 99999999) return
-      if (zone.risk_grade === 'LOW') return
+        // zones 배열에서 매칭되는 Zone 찾기
+        const matchedZone = zones.find(z => z.conzone_id === nearest.conzone_id)
+        if (!matchedZone) return
 
-      // 쿨타임 체크
-      const lastAlerted = cooldownRef.current[zone.conzone_id] ?? 0
-      if (now - lastAlerted < ALERT_COOLTIME_MS) return
-
-      if (!closest || dist < closest.distance_m) {
-        closest = { zone, distance_m: Math.round(dist) }
-      }
-    })
-
-    if (closest) {
-      cooldownRef.current[(closest as AlertInfo).zone.conzone_id] = now
-      setAlert(closest)
-    }
+        cooldownRef.current[nearest.conzone_id] = now
+        setAlert({
+          zone:       matchedZone,
+          distance_m: Math.round(nearest.distance_m),
+        })
+      })
+      .catch(err => console.error('nearby fetch 실패:', err))
   }, [position, zones])
 
   const dismissAlert = () => setAlert(null)

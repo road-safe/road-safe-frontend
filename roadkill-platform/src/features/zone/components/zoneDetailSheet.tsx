@@ -1,7 +1,8 @@
 // src/features/zone/components/ZoneDetailSheet.tsx
 'use client'
 
-import { Zone } from '../types'
+import { useState, useEffect } from 'react'
+import { Zone, ZoneDetail } from '../types'
 import { GRADE_COLOR } from '../constants'
 
 interface Props {
@@ -18,23 +19,41 @@ const GRADE_LABEL: Record<string, string> = {
 }
 
 export default function ZoneDetailSheet({ zone, onClose, onSummaryClick }: Props) {
+  const [detail, setDetail]   = useState<ZoneDetail | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!zone) return
+
+    setDetail(null)
+    setLoading(true)
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/zones/${zone.conzone_id}`)
+      .then(res => {
+        if (!res.ok) throw new Error()
+        return res.json()
+      })
+      .then(data => setDetail(data))
+      .catch(() => setDetail(null))
+      .finally(() => setLoading(false))
+  }, [zone])
+
   if (!zone) return null
 
   const color = GRADE_COLOR[zone.risk_grade]
 
+  // peak_hour → 텍스트 변환
+  const peakHourLabel = (hour: number) => {
+    if (hour >= 0  && hour < 6)  return '새벽'
+    if (hour >= 6  && hour < 12) return '오전'
+    if (hour >= 12 && hour < 18) return '오후'
+    return '야간'
+  }
+
   return (
     <>
-      {/* 배경 딤 */}
-      <div
-        onClick={onClose}
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 20,
-        }}
-      />
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 20 }} />
 
-      {/* 하단 시트 */}
       <div style={{
         position: 'fixed',
         bottom: 0,
@@ -44,7 +63,7 @@ export default function ZoneDetailSheet({ zone, onClose, onSummaryClick }: Props
         background: '#1a1a1a',
         borderRadius: '20px 20px 0 0',
         boxShadow: '0 -4px 24px rgba(0,0,0,0.4)',
-        padding: '14px 24px 48px',
+        padding: '14px 24px calc(48px + env(safe-area-inset-bottom))',
         animation: 'slideUp 0.25s ease',
       }}>
         {/* 핸들 */}
@@ -64,7 +83,6 @@ export default function ZoneDetailSheet({ zone, onClose, onSummaryClick }: Props
           marginBottom: 10,
         }}>
           <span style={{
-            display: 'inline-block',
             padding: '4px 12px',
             borderRadius: 20,
             fontSize: 12,
@@ -96,16 +114,29 @@ export default function ZoneDetailSheet({ zone, onClose, onSummaryClick }: Props
 
         {/* 구간명 */}
         <div style={{ fontSize: 22, fontWeight: 700, color: '#fff', marginBottom: 4 }}>
-          {zone.conzone_id} 구간
+          {loading ? '불러오는 중...' : detail?.conzone_name ?? zone.conzone_id}
         </div>
         <div style={{ fontSize: 13, color: '#888', marginBottom: 20 }}>
-          위험 반경 {zone.radius_m}m
+          {detail?.route_name ?? ''}
         </div>
 
-        {/* 정보 칩 */}
+        {/* 정보 칩 3개 */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-          <InfoChip label="위험 점수" value={`${zone.risk_score}점`} color={color} />
-          <InfoChip label="위험 등급" value={GRADE_LABEL[zone.risk_grade]} color={color} />
+          <InfoChip
+            label="총 사고"
+            value={detail ? `${detail.incident_count}건` : '-'}
+            color={color}
+          />
+          <InfoChip
+            label="위험 점수"
+            value={detail ? `${detail.risk_score}점` : '-'}
+            color={color}
+          />
+          <InfoChip
+            label="위험 시간"
+            value={detail ? peakHourLabel(detail.peak_hour) : '-'}
+            color={color}
+          />
         </div>
 
         {/* 버튼 */}

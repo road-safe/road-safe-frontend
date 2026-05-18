@@ -30,6 +30,7 @@ export default function ZoneSummarySheet({ zone, onClose }: Props) {
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState<string | null>(null)
 
+/*
 useEffect(() => {
   if (!zone) return
 
@@ -44,27 +45,26 @@ useEffect(() => {
     setLoading(false)
   }, 1200)
 }, [zone])
+*/
 
+ //api 연결 하면 이걸로
+useEffect(() => {
+  if (!zone) return
 
- /* api 연결 하면 이걸로
-  useEffect(() => {
-    if (!zone) return
+  setSummary(null)
+  setError(null)
+  setLoading(true)
 
-    // zone 바뀔 때마다 초기화 후 fetch
-    setSummary(null)
-    setError(null)
-    setLoading(true)
+  fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/zones/${zone.conzone_id}/summary`)
+    .then(res => {
+      if (!res.ok) throw new Error()
+      return res.json()
+    })
+    .then(data => setSummary(data.summary))
+    .catch(() => setError('설명을 불러오지 못했어요. 다시 시도해주세요.'))
+    .finally(() => setLoading(false))
+}, [zone])
 
-    fetch(`/api/zones/${zone.conzone_id}/summary`)
-      .then(res => {
-        if (!res.ok) throw new Error('요청 실패')
-        return res.json()
-      })
-      .then(data => setSummary(data.summary))
-      .catch(() => setError('설명을 불러오지 못했어요. 다시 시도해주세요.'))
-      .finally(() => setLoading(false))
-  }, [zone])
-  */
 
   if (!zone) return null
 
