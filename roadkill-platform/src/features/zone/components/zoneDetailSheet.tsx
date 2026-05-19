@@ -21,6 +21,7 @@ const GRADE_LABEL: Record<string, string> = {
 export default function ZoneDetailSheet({ zone, onClose, onSummaryClick }: Props) {
   const [detail, setDetail]   = useState<ZoneDetail | null>(null)
   const [loading, setLoading] = useState(false)
+  const currentHour = new Date().getHours()
 
   useEffect(() => {
     if (!zone) return
@@ -28,7 +29,7 @@ export default function ZoneDetailSheet({ zone, onClose, onSummaryClick }: Props
     setDetail(null)
     setLoading(true)
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/zones/${zone.conzone_id}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/zones/${zone.conzone_id}` + `?hour=${currentHour}`)
       .then(res => {
         if (!res.ok) throw new Error()
         return res.json()

@@ -16,13 +16,15 @@ export function useNearbyAlert(
 ) {
   const [alert, setAlert] = useState<AlertInfo | null>(null)
   const cooldownRef       = useRef<Record<string, number>>({})
+  const currentHour = new Date().getHours()
 
   useEffect(() => {
     if (!position) return
 
     fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/zones/nearby` +
-      `?lat=${position.lat}&lng=${position.lng}&radius=${DEFAULT_RADIUS_M}`
+      `?lat=${position.lat}&lng=${position.lng}&radius=${DEFAULT_RADIUS_M}` +
+      `?hour=${currentHour}`
     )
       .then(res => {
         if (!res.ok) throw new Error()
