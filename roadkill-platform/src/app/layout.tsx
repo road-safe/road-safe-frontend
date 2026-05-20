@@ -25,19 +25,20 @@ export default function RootLayout({
 
   return (
     <html lang="ko">
-      <body style={{
-        margin: 0,
-        padding: 0,
-        overscrollBehavior: 'none', // 모바일 당겨서 새로고침 방지
-        }}>
-        
-        {children}
         <Script
-          //src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false`}
-          src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false`}
-          strategy="afterInteractive"
+            src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false`}
+            strategy="beforeInteractive"
         />
-      </body>
+
+        <body
+            style={{
+            margin: 0,
+            padding: 0,
+            overscrollBehavior: 'none',
+            }}
+        >
+            {children}
+        </body>
     </html>
   )
 }
