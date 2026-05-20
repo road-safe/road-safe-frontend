@@ -1,7 +1,7 @@
 // src/app/page.tsx
 'use client'
 
-import KakaoMap from '@/features/map/components/KakaoMap'
+import KakaoMap from '@/features/map/components/KaKaoMap'
 import { useZones } from '@/features/zone/hooks/useZones'
 import { Zone } from '@/features/zone/types'
 import ZoneDetailSheet from '@/features/zone/components/zoneDetailSheet'
