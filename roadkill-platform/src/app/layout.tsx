@@ -33,7 +33,8 @@ export default function RootLayout({
         
         {children}
         <Script
-          src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false`}
+          //src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false`}
+          src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false`}
           strategy="afterInteractive"
         />
       </body>
