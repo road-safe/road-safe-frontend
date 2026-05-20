@@ -26,11 +26,12 @@ export default function RootLayout({
 
   return (
     <html lang="ko">
+        <head>
         <Script
             src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false`}
             strategy="beforeInteractive"
         />
-
+        </head>
         <body
             style={{
             margin: 0,
