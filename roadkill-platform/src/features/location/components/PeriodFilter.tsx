@@ -29,21 +29,23 @@ export default function PeriodFilter({ selected, onChange }: Props) {
       borderRadius: 40,
       padding: '5px 6px',
       boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+      whiteSpace: 'nowrap',
     }}>
       {PERIODS.map(p => (
         <button
           key={p.value}
           onClick={() => onChange(p.value)}
           style={{
-            padding: '7px 16px',
+            padding: '7px 12px',
             borderRadius: 40,
             border: 'none',
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: selected === p.value ? 600 : 400,
             background: selected === p.value ? '#1a1a1a' : 'transparent',
             color: selected === p.value ? '#fff' : '#666',
             cursor: 'pointer',
             transition: 'all 0.15s',
+            whiteSpace: 'nowrap', 
           }}
         >
           {p.label}
