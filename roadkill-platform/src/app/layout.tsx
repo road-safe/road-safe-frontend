@@ -22,6 +22,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY
+  console.log('kakaoKey:', kakaoKey)
 
   return (
     <html lang="ko">
