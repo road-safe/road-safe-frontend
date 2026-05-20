@@ -36,43 +36,109 @@ export default function KakaoMap({
   useEffect(() => { onZoneClickRef.current = onZoneClick }, [onZoneClick])
 
   // 지도 초기화 — 최초 1회
-  useEffect(() => {
-    const timer = setInterval(() => {
-      if (!window.kakao?.maps || !containerRef.current) return
-      clearInterval(timer)
+  // 지도 초기화 — 최초 1회
+useEffect(() => {
+  console.log('map effect start')
 
-      window.kakao.maps.load(() => {
-        const options = {
-          center: new window.kakao.maps.LatLng(
-            MAP_CONFIG.center.lat,
-            MAP_CONFIG.center.lng,
-          ),
-          level: MAP_CONFIG.level,
-        }
-        mapRef.current = new window.kakao.maps.Map(
-          containerRef.current,
-          options,
+  if (!containerRef.current) {
+    console.log('container 없음')
+    return
+  }
+
+  const initMap = () => {
+    if (!window.kakao?.maps) {
+      console.log('kakao maps 없음')
+      return
+    }
+
+    console.log('kakao maps 존재')
+
+    window.kakao.maps.load(() => {
+      console.log('kakao maps load 진입')
+
+      const options = {
+        center: new window.kakao.maps.LatLng(
+          MAP_CONFIG.center.lat,
+          MAP_CONFIG.center.lng,
+        ),
+        level: MAP_CONFIG.level,
+      }
+
+      mapRef.current = new window.kakao.maps.Map(
+        containerRef.current!,
+        options,
+      )
+
+      console.log('지도 생성 완료')
+
+      onMapReadyRef.current?.((lat, lng) => {
+        const position =
+          new window.kakao.maps.LatLng(lat, lng)
+
+        mapRef.current.setLevel(6)
+        mapRef.current.panTo(position)
+
+        console.log(
+          'after level:',
+          mapRef.current.getLevel()
         )
-
-        // ref로 접근 — 항상 최신 콜백 읽음
-        onMapReadyRef.current?.((lat, lng) => {
-            const position =
-            new window.kakao.maps.LatLng(lat, lng)
-
-            mapRef.current.setLevel(6)
-            mapRef.current.panTo(position)
-
-            console.log(
-                'after level:',
-                mapRef.current.getLevel()
-            )
-
-        })
       })
-    }, 100)
+    })
+  }
 
-    return () => clearInterval(timer)
-  }, []) // 빈 배열이어도 ref라서 안전
+  // SDK 이미 로드됨
+  if (window.kakao?.maps) {
+    initMap()
+    return
+  }
+
+  // SDK 로드 대기
+  const timer = setInterval(() => {
+    if (window.kakao?.maps) {
+      clearInterval(timer)
+      initMap()
+    }
+  }, 100)
+
+  return () => clearInterval(timer)
+}, [])
+//   useEffect(() => {
+//     const timer = setInterval(() => {
+//       if (!window.kakao?.maps || !containerRef.current) return
+//       clearInterval(timer)
+
+//       window.kakao.maps.load(() => {
+//         const options = {
+//           center: new window.kakao.maps.LatLng(
+//             MAP_CONFIG.center.lat,
+//             MAP_CONFIG.center.lng,
+//           ),
+//           level: MAP_CONFIG.level,
+//         }
+//         mapRef.current = new window.kakao.maps.Map(
+//           containerRef.current,
+//           options,
+//         )
+
+//         // ref로 접근 — 항상 최신 콜백 읽음
+//         onMapReadyRef.current?.((lat, lng) => {
+//             const position =
+//             new window.kakao.maps.LatLng(lat, lng)
+
+//             mapRef.current.setLevel(6)
+//             mapRef.current.panTo(position)
+
+//             console.log(
+//                 'after level:',
+//                 mapRef.current.getLevel()
+//             )
+
+//         })
+//       })
+//     }, 100)
+
+//     return () => clearInterval(timer)
+//   }, []) // 빈 배열이어도 ref라서 안전
 
 
 
